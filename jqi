@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+INPUT="${1:-/dev/stdin}"
+
+FILE="$(mktemp)"
+if [ ! -f "${FILE}" ]; then
+   echo "Could not create temp file" >&2
+   exit 1
+fi
+
+function cleanup {
+    rm -rf "${FILE}"
+}
+
+trap cleanup EXIT INT TERM HUP
+
+cat "${INPUT}" > "${FILE}"
+echo '' |                                       \
+    fzf --print-query                           \
+        --preview-window 'up:90%'               \
+        --preview "cat \"${FILE}\" | jq {q}"
